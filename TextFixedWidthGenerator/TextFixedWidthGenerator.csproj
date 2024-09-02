@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>Dovid.$(AssemblyName)</PackageId>
+    <Title>Fixed-Length Text Lines Generator</Title>
+    <Company>Dovid</Company>
+    <Description>The TextFixedWidthGenerator is a C# library designed to generate text files with fixed-length lines. It allows developers to define a set of customizable settings for each column, including column size, padding character, and padding direction (left or right). This tool is ideal for creating structured text files where consistent line lengths and precise formatting are crucial, such as in data exchange formats, legacy system integrations, or any scenario requiring uniform text file structure.
+
+By using this library, you can easily automate the creation of text files that adhere to specific formatting requirements, ensuring compatibility and readability across various systems.</Description>
+  </PropertyGroup>
+
+</Project>

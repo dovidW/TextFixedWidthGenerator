@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFixedWidthGenerator", "TextFixedWidthGenerator\TextFixedWidthGenerator.csproj", "{827FE89F-168A-488E-AFFF-3146B163288B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{F2C41283-CB7D-4719-83C4-6005654B9449}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{827FE89F-168A-488E-AFFF-3146B163288B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{827FE89F-168A-488E-AFFF-3146B163288B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{827FE89F-168A-488E-AFFF-3146B163288B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{827FE89F-168A-488E-AFFF-3146B163288B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2C41283-CB7D-4719-83C4-6005654B9449}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2C41283-CB7D-4719-83C4-6005654B9449}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2C41283-CB7D-4719-83C4-6005654B9449}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2C41283-CB7D-4719-83C4-6005654B9449}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {67885DFA-2E32-4590-868A-B5D009C03CF6}
+	EndGlobalSection
+EndGlobal
