@@ -8,6 +8,10 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Dovid.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <PackageProjectUrl>https://github.com/dovidW/TextFixedWidthGenerator</PackageProjectUrl>
+    <Description>The TextFixedWidthGenerator is a C# library designed to generate text files with fixed-length lines. It allows developers to define a set of customizable settings for each column, including column size, padding character, and padding direction (left or right). This tool is ideal for creating structured text files where consistent line lengths and precise formatting are crucial, such as in data exchange formats, legacy system integrations, or any scenario requiring uniform text file structure.
+
+By using this library, you can easily automate the creation of text files that adhere to specific formatting requirements, ensuring compatibility and readability across various systems.</Description>
   </PropertyGroup>
 
   <ItemGroup>

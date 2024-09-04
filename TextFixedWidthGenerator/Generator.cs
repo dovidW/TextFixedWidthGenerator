@@ -1,162 +1,125 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Dovid.TextFixedWidthGenerator
 {
+
+
     public class Generator
     {
+        public DucumentSpecificationSet Specification { get; private set; }
+
         private int CurrentRowPosition { get; set; }
-        private JsonElement CurrentRowElement { get; set; }
+        private dynamic CurrentRowElement { get; set; }
+        private Dictionary<string, PropertyInfo> props;
+        private Func<string, dynamic?> PropertyExtractor = null;
 
-        public DucumentSpecificationSet Specification { get; set; }
-
-        public Generator(string schemeFileName)
+        private Generator(DucumentSpecificationSet scheme)
         {
-            var text = File.ReadAllText(schemeFileName);
-            Specification = JsonSerializer.Deserialize<DucumentSpecificationSet>(text);
+            Specification = scheme;
         }
 
-        public Generator(DucumentSpecificationSet specification)
+        public static IEnumerable<string> ExportToText<T>(IEnumerable<T> inputRows, DucumentSpecificationSet scheme)
         {
-            Specification = specification;
-        }
+            var instance = new Generator(scheme);
 
-        public IEnumerable<string> Export(string jsonAsString)
-        {
-            var rows = JsonToRows(jsonAsString);
-
-            foreach (var element in rows)
+            if (typeof(IDictionary<string, dynamic>).IsAssignableFrom(typeof(T)))
+                instance.PropertyExtractor = new Func<string, dynamic>((key) => ((IDictionary<string, dynamic>)instance.CurrentRowElement)[key]);
+            else
             {
-                CurrentRowPosition++;
-                CurrentRowElement = element;
-                yield return string.Concat(Specification.FieldSets.Select(fs => fs.ToString(this)));
-            }
-        }
-
-        public class DucumentSpecificationSet
-        {
-            public List<DataFieldSet> FieldSets { get; set; }
-        }
-
-        public class DataFieldSet
-        {
-            public string FriednlyName { get; set; }
-            public string SourceFieldName { get; set; }
-            public TypeValue? Type { get; set; } = null;
-            public SpecialValueProvider SpecialValue { get; set; }
-            public string Format { get; set; } //passed to ToString(Format) function
-            public string DefaultValue { get; set; }
-
-            //Padding
-            public int? Size { get; set; }
-            public Side PaddingSide { get; set; }
-            public char PaddingChar { get; set; } = ' ';
-
-
-            private string GetJsonValue(JsonElement rowObj)
-            {
-                var exsist = rowObj.TryGetProperty(SourceFieldName, out var elVal);
-
-                string output = "";
-
-                if (exsist)
-                    output = Type switch
-                    {
-                        TypeValue.String => elVal.GetString().ToString(),
-                        TypeValue.Int => elVal.GetInt64().ToString(Format),
-                        TypeValue.Double => elVal.GetDouble().ToString(Format),
-                        TypeValue.DateTime => elVal.GetDateTime().ToString(Format),
-                        TypeValue.Boolean => GetBool(elVal).ToString(),
-                        _ => elVal.ToString()
-                    };
-
-                return output;
+                instance.props = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p);
+                instance.PropertyExtractor = (key) => instance.props.TryGetValue(key, out var prop) ? prop.GetValue(instance.CurrentRowElement) : null;
             }
 
-
-            public string ToString(Generator exporter)
-            {
-                var output = SpecialValue?.GetValue(exporter, Format) ?? GetJsonValue(exporter.CurrentRowElement) ?? DefaultValue;
-
-                if (Size.HasValue)
+            if (instance.Specification.SeperatorString == null)
+                foreach (var element in inputRows)
                 {
-                    if (output.Length > Size)
-                        output = output.Substring(0, Size.Value);
-                    else if (output.Length < Size)
-                    {
-                        output = PaddingSide switch
-                        {
-                            Side.Left => output.PadLeft(Size.Value, PaddingChar),
-                            Side.Right => output.PadRight(Size.Value, PaddingChar),
-                            _ => throw new ArgumentOutOfRangeException()
-                        };
-                    }
+                    instance.CurrentRowPosition++;
+                    instance.CurrentRowElement = element;
+                    yield return string.Concat(instance.Specification.FieldSets.Select(fs => instance.GetField(fs)));
                 }
-
-
-                return output;
-            }
-
-            bool GetBool(JsonElement el)
-            {
-                if (el.ValueKind == JsonValueKind.True)
-                    return true;
-                if (el.ValueKind == JsonValueKind.False)
-                    return false;
-                throw new FormatException();
-            }
-
-            public enum Side
-            {
-                Right,
-                Left
-            }
-
-            public enum TypeValue
-            {
-                Int,
-                String,
-                DateTime,
-                Double,
-                Boolean
-            }
-        }
-
-
-
-        public class SpecialValueProvider
-        {
-            private TypeValue TypeOfValue { get; set; }
-
-            public SpecialValueProvider() { }
-            public SpecialValueProvider(TypeValue typeOfValue) => TypeOfValue = typeOfValue;
-
-
-            public enum TypeValue
-            {
-                RowNumber
-            }
-
-            public string GetValue(Generator exporter, string Format)
-            {
-                return TypeOfValue switch
+            else
+                foreach (var element in inputRows)
                 {
-                    TypeValue.RowNumber => exporter.CurrentRowPosition.ToString(Format),
-                    _ => throw new ArgumentException()
-                };
-            }
+                    instance.CurrentRowPosition++;
+                    instance.CurrentRowElement = element;
+                    yield return string.Join(instance.Specification.SeperatorString, instance.Specification.FieldSets.Select(fs => instance.GetField(fs)));
+                }
         }
 
-        private IEnumerable<JsonElement> JsonToRows(string jsonAsString)
+        private string GetSpecialValue(SpecialValueOptions TypeOfValue, string Format)
         {
-            var doc = JsonDocument.Parse(jsonAsString);
-            if (doc.RootElement.ValueKind != JsonValueKind.Array)
-                yield break;
-
-            var enumArr = doc.RootElement.EnumerateArray();
-
-            foreach (var element in enumArr)
-                if (element.ValueKind == JsonValueKind.Object)
-                    yield return element;
+            return TypeOfValue switch
+            {
+                SpecialValueOptions.RowNumber => CurrentRowPosition.ToString(Format),
+                _ => throw new ArgumentException()
+            };
         }
+
+        public string GetField(DataFieldSet fs)
+        {
+            string output = null;
+            if (fs.SpecialValue.HasValue)
+                output = GetSpecialValue(fs.SpecialValue.Value, fs.Format);
+            else
+            {
+                var obj = PropertyExtractor(fs.SourceFieldName);
+                if (obj is not null)
+                    output = fs.Format == null ? obj.ToString() : obj.ToString(fs.Format);
+            }
+
+            output ??= fs.DefaultValue ?? "";
+
+            if (fs.Size.HasValue)
+            {
+                if (output.Length > fs.Size)
+                    output = output.Substring(0, fs.Size.Value);
+                else if (output.Length < fs.Size)
+                {
+                    output = fs.PaddingSide switch
+                    {
+                        DataFieldSet.Side.Left => output.PadLeft(fs.Size.Value, fs.PaddingChar),
+                        DataFieldSet.Side.Right => output.PadRight(fs.Size.Value, fs.PaddingChar),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+            }
+
+            return output;
+        }
+    }
+
+    public class DucumentSpecificationSet
+    {
+        public List<DataFieldSet> FieldSets { get; set; } = new();
+        public string SeperatorString { get; set; }
+    }
+
+    public class DataFieldSet
+    {
+        public SpecialValueOptions? SpecialValue { get; set; }
+        public string? FriednlyName { get; set; }
+        public string SourceFieldName { get; set; }
+
+        public string Format { get; set; } //passed to ToString(Format) function
+        public string DefaultValue { get; set; }
+
+        //Padding
+        public int? Size { get; set; }
+        public Side PaddingSide { get; set; }
+        public char PaddingChar { get; set; } = ' ';
+
+        public enum Side
+        {
+            Right,
+            Left
+        }
+
+    }
+
+    public enum SpecialValueOptions
+    {
+        RowNumber
     }
 }

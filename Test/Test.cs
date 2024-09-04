@@ -8,35 +8,32 @@ namespace Test
         [TestMethod]
         public void Test1()
         {
-            var specification = new Generator.DucumentSpecificationSet
+            var specification = new DucumentSpecificationSet
             {
-                FieldSets = new List<Generator.DataFieldSet>
+                FieldSets = new List<DataFieldSet>
                 {
-                    new Generator.DataFieldSet
+                    new DataFieldSet
                     {
                         FriednlyName = "Name",
                         SourceFieldName = "name",
-                        Type = Generator.DataFieldSet.TypeValue.String,
                         Size = 10,
-                        PaddingSide = Generator.DataFieldSet.Side.Left,
+                        PaddingSide = DataFieldSet.Side.Left,
                         PaddingChar = '0'
                     },
-                    new Generator.DataFieldSet
+                    new DataFieldSet
                     {
                         FriednlyName = "Age",
                         SourceFieldName = "age",
-                        Type = Generator.DataFieldSet.TypeValue.Int,
                         Size = 3,
-                        PaddingSide = Generator.DataFieldSet.Side.Right,
+                        PaddingSide = DataFieldSet.Side.Right,
                         PaddingChar = ' '
                     }
                 }
             };
 
-            var generator = new Generator(specification);
 
             var json = "[{\"name\":\"John\",\"age\":25}]";
-            var result = generator.Export(json).ToList();
+            var result = Generator.ExportToText(new[] { new { name = "John", age = 25 } }, specification).ToList();
 
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("000000John25 ", result[0]);
