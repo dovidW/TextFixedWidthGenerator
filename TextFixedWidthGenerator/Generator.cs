@@ -70,6 +70,8 @@ namespace Dovid.TextFixedWidthGenerator
             }
 
             output ??= fs.DefaultValue ?? "";
+            if (fs.ReverseOrder)
+                output = new string(output.Reverse().ToArray());
 
             if (fs.Size.HasValue)
             {
@@ -109,6 +111,8 @@ namespace Dovid.TextFixedWidthGenerator
         public int? Size { get; set; }
         public Side PaddingSide { get; set; }
         public char PaddingChar { get; set; } = ' ';
+
+        public bool ReverseOrder { get; set; }
 
         public enum Side
         {

@@ -14,7 +14,6 @@ namespace Test
                 {
                     new DataFieldSet
                     {
-                        FriednlyName = "Name",
                         SourceFieldName = "name",
                         Size = 10,
                         PaddingSide = DataFieldSet.Side.Left,
@@ -22,21 +21,27 @@ namespace Test
                     },
                     new DataFieldSet
                     {
-                        FriednlyName = "Age",
+                        SourceFieldName = "lastName",
+                        Size = 20,
+                        PaddingSide = DataFieldSet.Side.Right,
+                        PaddingChar = ' ',
+                        ReverseOrder = true
+                    },
+                    new DataFieldSet
+                    {
                         SourceFieldName = "age",
                         Size = 3,
-                        PaddingSide = DataFieldSet.Side.Right,
-                        PaddingChar = ' '
+                        PaddingSide = DataFieldSet.Side.Left,
+                        PaddingChar = '_'
                     }
                 }
             };
 
 
-            var json = "[{\"name\":\"John\",\"age\":25}]";
-            var result = Generator.ExportToText(new[] { new { name = "John", age = 25 } }, specification).ToList();
+            var result = Generator.ExportToText(new[] { new { name = "John", age = 25, lastName = "בנימין ברבישבסקי" } }, specification).ToList();
 
             Assert.AreEqual(1, result.Count);
-            Assert.AreEqual("000000John25 ", result[0]);
+            Assert.AreEqual("000000Johnיקסבשיברב ןימינב    _25", result[0]);
 
         }
     }
