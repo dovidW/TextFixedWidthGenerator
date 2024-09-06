@@ -8,7 +8,7 @@ namespace Test
         [TestMethod]
         public void Test1()
         {
-            var specification = new DucumentSpecificationSet
+            var specification = new DocumentSpecificationSet
             {
                 FieldSets = new List<DataFieldSet>
                 {
@@ -16,23 +16,24 @@ namespace Test
                     {
                         SourceFieldName = "name",
                         Size = 10,
-                        PaddingSide = DataFieldSet.Side.Left,
+                        PaddingSide = Side.Left,
                         PaddingChar = '0'
                     },
                     new DataFieldSet
                     {
                         SourceFieldName = "lastName",
                         Size = 20,
-                        PaddingSide = DataFieldSet.Side.Right,
+                        PaddingSide = Side.Right,
                         PaddingChar = ' ',
                         ReverseOrder = true
                     },
                     new DataFieldSet
                     {
                         SourceFieldName = "age",
-                        Size = 3,
-                        PaddingSide = DataFieldSet.Side.Left,
-                        PaddingChar = '_'
+                        Size = 5,
+                        PaddingSide = Side.Left,
+                        PaddingChar = '_',
+                        Format = ".F2"
                     }
                 }
             };
@@ -41,7 +42,7 @@ namespace Test
             var result = Generator.ExportToText(new[] { new { name = "John", age = 25, lastName = "בנימין ברבישבסקי" } }, specification).ToList();
 
             Assert.AreEqual(1, result.Count);
-            Assert.AreEqual("000000Johnיקסבשיברב ןימינב    _25", result[0]);
+            Assert.AreEqual("000000Johnיקסבשיברב ןימינב    _2500", result[0]);
 
         }
     }

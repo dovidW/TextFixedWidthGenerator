@@ -16,7 +16,7 @@ By using this library, you can easily automate the creation of text files that a
     <PackageTags>מסב;massav;text;fixed-width</PackageTags>
     <AssemblyVersion></AssemblyVersion>
     <FileVersion></FileVersion>
-    <Version>2.0.0</Version>
+    <Version>2.0.2</Version>
   </PropertyGroup>
 
 </Project>

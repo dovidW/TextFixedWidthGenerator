@@ -8,19 +8,19 @@ namespace Dovid.TextFixedWidthGenerator
 
     public class Generator
     {
-        public DucumentSpecificationSet Specification { get; private set; }
+        public DocumentSpecificationSet Specification { get; private set; }
 
         private int CurrentRowPosition { get; set; }
         private dynamic CurrentRowElement { get; set; }
         private Dictionary<string, PropertyInfo> props;
         private Func<string, dynamic?> PropertyExtractor = null;
 
-        private Generator(DucumentSpecificationSet scheme)
+        private Generator(DocumentSpecificationSet scheme)
         {
             Specification = scheme;
         }
 
-        public static IEnumerable<string> ExportToText<T>(IEnumerable<T> inputRows, DucumentSpecificationSet scheme)
+        public static IEnumerable<string> ExportToText<T>(IEnumerable<T> inputRows, DocumentSpecificationSet scheme)
         {
             var instance = new Generator(scheme);
 
@@ -57,6 +57,13 @@ namespace Dovid.TextFixedWidthGenerator
             };
         }
 
+        private static string FormatObj(dynamic obj, string format)
+        {
+            if (format.StartsWith(".F"))
+                return obj.ToString(format.Substring(1)).Replace(".", "");
+            return obj.ToString(format);
+        }
+
         public string GetField(DataFieldSet fs)
         {
             string output = null;
@@ -66,7 +73,7 @@ namespace Dovid.TextFixedWidthGenerator
             {
                 var obj = PropertyExtractor(fs.SourceFieldName);
                 if (obj is not null)
-                    output = fs.Format == null ? obj.ToString() : obj.ToString(fs.Format);
+                    output = fs.Format == null ? obj.ToString() : FormatObj(obj, fs.Format);
             }
 
             output ??= fs.DefaultValue ?? "";
@@ -81,8 +88,8 @@ namespace Dovid.TextFixedWidthGenerator
                 {
                     output = fs.PaddingSide switch
                     {
-                        DataFieldSet.Side.Left => output.PadLeft(fs.Size.Value, fs.PaddingChar),
-                        DataFieldSet.Side.Right => output.PadRight(fs.Size.Value, fs.PaddingChar),
+                        Side.Left => output.PadLeft(fs.Size.Value, fs.PaddingChar),
+                        Side.Right => output.PadRight(fs.Size.Value, fs.PaddingChar),
                         _ => throw new ArgumentOutOfRangeException()
                     };
                 }
@@ -92,7 +99,7 @@ namespace Dovid.TextFixedWidthGenerator
         }
     }
 
-    public class DucumentSpecificationSet
+    public class DocumentSpecificationSet
     {
         public List<DataFieldSet> FieldSets { get; set; } = new();
         public string SeperatorString { get; set; }
@@ -104,24 +111,22 @@ namespace Dovid.TextFixedWidthGenerator
         public string? FriednlyName { get; set; }
         public string SourceFieldName { get; set; }
 
-        public string Format { get; set; } //passed to ToString(Format) function
-        public string DefaultValue { get; set; }
+        public string? Format { get; set; } //passed to ToString(Format) function
+        public string? DefaultValue { get; set; }
 
         //Padding
         public int? Size { get; set; }
-        public Side PaddingSide { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public Side PaddingSide { get; set; } = Side.Left;
         public char PaddingChar { get; set; } = ' ';
 
         public bool ReverseOrder { get; set; }
-
-        public enum Side
-        {
-            Right,
-            Left
-        }
-
     }
-
+    public enum Side
+    {
+        Right,
+        Left
+    }
     public enum SpecialValueOptions
     {
         RowNumber
